@@ -30,10 +30,7 @@ data class LambdaType(
 data class ParameterType(
     val index: Int
 ) : Type()
-class NewType: Type()
-data class ClosureType(
-    val index: Int
-) : Type()
+class InternalType: Type()
 data class TypeRef(
     val type: Type,
     val params: List<Type>,
