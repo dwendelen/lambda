@@ -6,12 +6,12 @@ import se.daan.lambda.ast.*
 import java.lang.Exception
 import java.lang.RuntimeException
 
-fun parse(script: String, symbolTable: SymbolTable, typeTable: TypeTable): SymbolTable {
+fun parse(script: String): SymbolTable {
     val lexer = LambdaLexer(ANTLRInputStream(script))
     val parser = LambdaParser(CommonTokenStream(lexer))
     val program = parser.program()
 
-    return program.accept(ProgramVisitor(symbolTable, typeTable)).first
+    return program.accept(ProgramVisitor()).first
 }
 
 typealias SymbolTable = Map<String, Symbol>
@@ -27,13 +27,10 @@ data class InternalTypeSymbol(val type: Type) : TypeSymbol()
 
 // TODO add lines and char in line to exception
 
-class ProgramVisitor(
-    private val symbolTable: SymbolTable,
-    private val typeTable: TypeTable
-) : LambdaBaseVisitor<Pair<SymbolTable, TypeTable>>() {
+class ProgramVisitor : LambdaBaseVisitor<Pair<SymbolTable, TypeTable>>() {
     override fun visitProgram(ctx: LambdaParser.ProgramContext): Pair<SymbolTable, TypeTable> {
         return ctx.programItem()
-            .fold(Pair(symbolTable, typeTable)) { (expr, type), item ->
+            .fold(Pair(mapOf(), mapOf())) { (expr, type), item ->
                 item.accept(ProgramItemVisitor(expr, type))
             }
     }
@@ -74,7 +71,8 @@ class ProgramItemVisitor(
         } catch (e: Exception) {
             throw RuntimeException("Line ${ctx.start.line}", e)
         }
-        return Pair(table + (ctx.IDENTIFIER().text to ExpressionSymbol(newExpr)), typeTable)
+        val name = ctx.IDENTIFIER().text
+        return Pair(table + (name to ExpressionSymbol(NamedExpression(name, newExpr))), typeTable)
     }
 }
 
@@ -135,7 +133,7 @@ class ExpressionVisitor(
         val symbol: Symbol = symbolTable[symbolName] ?: throw IllegalStateException("$symbolName not found")
         return when (symbol) {
             is ExpressionSymbol -> symbol.expression
-            is VariableSymbol -> ClosureRef(depth - symbol.depth - 1)
+            is VariableSymbol -> NamedExpression(symbolName, ClosureRef(depth - symbol.depth - 1))
         }
     }
 

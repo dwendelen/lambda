@@ -1,6 +1,6 @@
 package se.daan.lambda
 
-import se.daan.lambda.runner.Runner
+import se.daan.lambda.runner.*
 
 fun main() {
     val thing = """
@@ -21,8 +21,9 @@ fun main() {
             a.(not.b).b
         eqBool : Bool -> Bool -> Bool = a -> b ->
             a.b.(not.b)
-        printBool : Bool -> IO = a ->
-            a.(printTrue).(printFalse)
+        printBool : IO -> IO -> Bool -> IO = printTrue -> printFalse ->
+            a ->
+                a.printTrue.printFalse
 
         person : N -> A -> (N -> A -> R) -> R = name -> age ->
             fn ->
@@ -69,10 +70,11 @@ fun main() {
                 )
         foldr : (I -> A -> A) -> A -> List.I -> A = foldr1.foldr1
         
-        printList : (A -> IO -> IO) -> List.A -> IO -> IO = printElement -> node -> cnt ->
-            printLBracket.(
-                foldr.(e -> c -> printElement.e.(printComma.c)).(printRBracket.cnt).node
-            )
+        printList : IO -> IO -> IO -> (A -> IO) -> List.A -> IO = printLBracket -> printComma -> printRBracket ->
+            printElement -> node -> cnt ->
+                printLBracket.(
+                    foldr.(e -> c -> printElement.e.(printComma.c)).(printRBracket.cnt).node
+                )
             
         eqList1 : Self -> (A -> A -> Bool) -> List.A -> List.A -> Bool = self
             -> eqElement -> node1 -> node2 ->
@@ -132,8 +134,9 @@ fun main() {
             adderBit.a.b.0.(r -> c -> r)
         invertBit : Bit -> Bit = b ->
             b.1.0
-        printBit : Bit -> IO -> IO = a -> 
-            a.(print0).(print1)
+        printBit : IO -> IO -> Bit -> IO = print0 -> print1 ->
+            a -> cnt ->
+                a.print0.print1.cnt
         eqBit : Bit -> Bit -> Bool =
             a -> b -> 
                 a.(
@@ -178,8 +181,10 @@ fun main() {
                         )
                     )
                 )
-        printHex : Hex -> IO -> IO = 
-            h -> h.(d3 -> d2 -> d1 -> d0 ->
+        printHex : Hex -> IO = print0 -> print1 -> print2 -> print3 -> print4 -> print5 -> print6 -> print7 -> 
+                               print8 -> print9 -> printa -> printb -> printc -> printd -> printe -> printf ->
+                               h -> cnt ->
+           h.(d3 -> d2 -> d1 -> d0 ->
                 d3.(
                     d2.(
                         d1.(
@@ -209,7 +214,7 @@ fun main() {
                         )
                     )
                 )
-            )
+            ).cnt
         eqHex: Hex -> Hex -> Bool = h1 -> h2 ->
             h1.(b13 -> b12 -> b11 -> b10 ->
                 h2.(b23 -> b22 -> b21 -> b20 ->
@@ -249,10 +254,11 @@ fun main() {
                     and.(eqHex.b11.b21).(eqHex.b10.b20)
                 )
             )
-        printByte : Byte -> IO -> IO = b -> cnt ->
-            b.(h1 -> h0 ->
-                printHex.h1.(printHex.h0.cnt)
-            )
+        printByte : IO -> Byte -> IO = printHex ->
+            b -> cnt ->
+                b.(h1 -> h0 ->
+                    printHex.h1.(printHex.h0.cnt)
+                )
         invertByte : Byte -> Byte = b ->
             b.(h1 -> h0 -> 
                 byte.(invertHex.h1).(invertHex.h0)
@@ -293,57 +299,87 @@ fun main() {
         loop1Of5 : Loop -> Loop = first -> (fn -> fn.false.(loop2Of5.first))
         loopOf5 : Loop = loop1Of5.loop1Of5
         
-        fizzBuzz1 : Self -> Byte -> Loop -> Loop -> IO -> IO = self ->
-            num -> loop3 -> loop5 ->
+        fizzBuzz1 : Self -> Byte -> Loop -> Loop -> IO = self ->
+            printFizz -> printSpace -> printBuzz -> printLn -> printByte ->
+            num -> loop3 -> loop5 -> end ->
                 loop3.(is3 -> next3 -> 
                     loop5.(is5 -> next5 ->
                         if.is3.(
                             if.is5.(
-                                printFizz.printSpace.printBuzz.printLn
+                                cnt -> printFizz.(printSpace.(printBuzz.(printLn.cnt)))
                             ).(
-                                printFizz.printLn
+                                cnt -> printFizz.(printLn.cnt)
                             )
                         ).(
                             if.is5.(
-                                printBuzz.printLn
+                                cnt -> printBuzz.(printLn.cnt)
                             ).(
-                                printByte.num.printLn
+                                cnt -> printByte.num.(printLn.cnt)
                             )
-                        ).(self.self.(incrByte.num).next3.next5)
+                        ).(self.self.printFizz.printSpace.printBuzz.printLn.printByte.(incrByte.num).next3.next5.end)
                     )
                 )
-        fizzBuzz : IO -> IO =
-            fizzBuzz1.fizzBuzz1.byte1.loopOf3.loopOf5
-        
-        prgm : IO = fizzBuzz.done
-        
+        fizzBuzz : IO = printFizz -> printSpace -> printBuzz -> printLn -> 
+                        print0 -> print1 -> print2 -> print3 -> print4 -> print5 -> print6 -> print7 -> 
+                        print8 -> print9 -> printa -> printb -> printc -> printd -> printe -> printf ->
+                        end ->
+            fizzBuzz1.fizzBuzz1.printFizz.printSpace.printBuzz.printLn.(
+                printByte.(
+                    printHex.print0.print1.print2.print3.print4.print5.print6.print7.print8.print9.printa.printb.printc.printd.printe.printf
+                )
+            ).byte1.loopOf3.loopOf5.end
     """.trimIndent() + "\n"
 
-    Runner()
-        .io("printLn") { println() }
-        .io("printSpace") { print(" ") }
-        .io("printTrue") { print("true") }
-        .io("printFalse") { print("false") }
-        .io("print0") { print("0") }
-        .io("print1") { print("1") }
-        .io("print2") { print("2") }
-        .io("print3") { print("3") }
-        .io("print4") { print("4") }
-        .io("print5") { print("5") }
-        .io("print6") { print("6") }
-        .io("print7") { print("7") }
-        .io("print8") { print("8") }
-        .io("print9") { print("9") }
-        .io("printa") { print("a") }
-        .io("printb") { print("b") }
-        .io("printc") { print("c") }
-        .io("printd") { print("d") }
-        .io("printe") { print("e") }
-        .io("printf") { print("f") }
-        .io("printLBracket") { print("[") }
-        .io("printRBracket") { print("]") }
-        .io("printComma") { print(",") }
-        .io("printFizz") { print("Fizz") }
-        .io("printBuzz") { print("Buzz") }
-        .run(thing, "prgm")
+    val print0 = PrintIO("0")
+    val print1 = PrintIO("1")
+    val print2 = PrintIO("2")
+    val print3 = PrintIO("3")
+    val print4 = PrintIO("4")
+    val print5 = PrintIO("5")
+    val print6 = PrintIO("6")
+    val print7 = PrintIO("7")
+    val print8 = PrintIO("8")
+    val print9 = PrintIO("9")
+    val printa = PrintIO("a")
+    val printb = PrintIO("b")
+    val printc = PrintIO("c")
+    val printd = PrintIO("d")
+    val printe = PrintIO("e")
+    val printf = PrintIO("f")
+    val printFizz = PrintIO("Fizz")
+    val printBuzz = PrintIO("Buzz")
+    val printSpace = PrintIO(" ")
+    val printLn = PrintIO("\n")
+
+    val expression1 = parse<IO>(thing, "fizzBuzz")
+    val expression2 = optimise(expression1)
+
+    val run1 = evaluate(expression2, printFizz, printSpace, printBuzz, printLn, print0, print1, print2, print3, print4, print5, print6, print7, print8, print9, printa, printb, printc, printd, printe, printf, DoneIO)
+    tailrec fun ioLoop(res: UserObjectResult<IO>) {
+        when(res.userObject) {
+            is DoneIO -> {
+                if (res.params.size != 1) {
+                    throw IllegalStateException()
+                }
+                return
+            }
+            is PrintIO -> {
+                print(res.userObject.string)
+                if (res.params.size != 1) {
+                    throw IllegalStateException()
+                }
+                val nextObj = when(val param = res.params.head) {
+                    is UserObject -> UserObjectResult(param.userObject, Nil())
+                    is LazyResult -> evaluate(param, Nil())
+                }
+                ioLoop(nextObj)
+            }
+        }
+    }
+
+    ioLoop(run1)
 }
+
+sealed interface IO
+data class PrintIO(val string: String): IO
+object DoneIO: IO

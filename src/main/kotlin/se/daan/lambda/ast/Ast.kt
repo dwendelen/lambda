@@ -1,25 +1,24 @@
 package se.daan.lambda.ast
 
-sealed class Expression
+sealed interface Expression
+data class NamedExpression(
+    val name: String,
+    val expression: Expression
+): Expression
 data class TypedExpression(
     val type: Type,
     val expression: Expression
-) : Expression()
+) : Expression
 data class Call(
     val called: Expression,
     val param: Expression
-) : Expression()
+) : Expression
 data class Lambda(
     val expression: Expression
-) : Expression()
+) : Expression
 data class ClosureRef(
     val index: Int
-) : Expression()
-data class IOExpression(
-    val fn: () -> Unit
-) : Expression()
-object Done : Expression()
-
+) : Expression
 
 sealed class Type
 class SelfType : Type()
@@ -36,4 +35,4 @@ data class TypeRef(
     val params: List<Type>,
     val name: String
 ) : Type()
-object IOType : Type()
+

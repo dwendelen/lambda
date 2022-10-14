@@ -26,12 +26,7 @@ fun validateType(
         is ClosureRef -> {
             bind(context.closure[expression.index], type, context)
         }
-        is IOExpression -> {
-            bind(LambdaType(IOType, IOType), type, context) //TODO check
-        }
-        Done -> {
-            bind(IOType, type, context)
-        }
+        else -> TODO()
     }
 }
 
@@ -73,14 +68,8 @@ private fun bind(type1: Type, type2: Type, context: TypeContext): TypeContext {
             }
         is ParameterType ->
             bind(context.params[type1.index], type2, context)
-        is IOType ->
-            when (type2) {
-                is IOType -> context
-                else -> bind(type2, type1, context)
-            }
         is LambdaType ->
             when (type2) {
-                is IOType -> throw IllegalStateException()
                 is LambdaType -> {
                     val ctx = bind(type1.from, type2.from, context)
                     bind(type1.to, type2.to, ctx)

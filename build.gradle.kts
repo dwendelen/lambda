@@ -15,6 +15,7 @@ repositories {
 dependencies {
     antlr("org.antlr:antlr4:4.5")
     testImplementation(kotlin("test"))
+    testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
 }
 
 tasks.generateGrammarSource {
