@@ -354,7 +354,7 @@ fun main() {
     val expression1 = parse<IO>(thing, "fizzBuzz")
     val expression2 = optimise(expression1)
 
-    val run1 = evaluate(expression2, printFizz, printSpace, printBuzz, printLn, print0, print1, print2, print3, print4, print5, print6, print7, print8, print9, printa, printb, printc, printd, printe, printf, DoneIO)
+    val run1 = evaluate(expression1, printFizz, printSpace, printBuzz, printLn, print0, print1, print2, print3, print4, print5, print6, print7, print8, print9, printa, printb, printc, printd, printe, printf, DoneIO)
     tailrec fun ioLoop(res: UserObjectResult<IO>) {
         when(res.userObject) {
             is DoneIO -> {
